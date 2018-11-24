@@ -5,7 +5,7 @@
 #include "ClojExp.h"
 #include <numeric>
 
-map<string, int> ClojExp::symbol_table{};
+map<string, int> ClojExp::global_symbol_table{};
 
 /**
  * \brief parse a clojure expression
@@ -42,7 +42,7 @@ vector<string> parse_clexpr(const string &clexpr) {
 
 void ClojExp::eval() {
     cout << "evaluating " << string_exp << "\n";
-    if (!evaluated) {
+    if (expression) {
         for (const string s : parse_clexpr(string_exp)) {
             exps.push_back(ClojExp(s));
         }
@@ -59,11 +59,23 @@ void ClojExp::eval() {
             // add symbol in the table
             string symbol = exps[1].string_exp;
             int value = std::stoi(exps[3].string_exp);
-            symbol_table[symbol] = value;
+            global_symbol_table[symbol] = value;{}
+        } else if (function == "defn") {
+            // add function in the table
+            // TODO check if this can be refactor with deconstruction
+            string name = exps[1].string_exp;
+            string params = exps[2].string_exp;
+            string expression = exps[3].string_exp;
+
+
+            cout << "Function " << name << " params " << params << " expression " << expression << "\n";
+
+
         } else {
             cout << "Exception: unknown function :" << function;
         }
     } else {
+        // it's a symbol
         try {
             result = std::stoi(string_exp);
             cout << " result : " << result << "\n";
@@ -89,11 +101,11 @@ int ClojExp::get_result() const {
 }
 
 void ClojExp::print_table() {
-    for_each(symbol_table.begin(), symbol_table.end(), [](auto p) { cout << "key" << p.first << endl; });
+    for_each(global_symbol_table.begin(), global_symbol_table.end(), [](auto p) { cout << "key" << p.first << endl; });
 }
 
 int ClojExp::get_symbol_value(string key) {
-    return symbol_table[key];
+    return global_symbol_table[key];
 }
 
 string eval_clexpr(const string &cexpr) {

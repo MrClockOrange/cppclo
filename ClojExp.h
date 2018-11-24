@@ -20,7 +20,7 @@ class ClojExp {
 
     const string string_exp;
     vector<ClojExp> exps;
-    bool evaluated;
+    bool expression;
     int result;
     map<const string, std::function<int(int, ClojExp)>> functions{
             {"+", [](int i, const ClojExp &e) { return i + e.get_result(); }},
@@ -31,24 +31,28 @@ class ClojExp {
         return functions.find(name) != functions.end();
     }
 
-    static map<string, int> symbol_table;
+    static map<string, int> global_symbol_table;
+    map<string, int> local_param;
+
 
 public:
     static int get_symbol_value(string key);
 
-    explicit ClojExp(string exp) : string_exp(exp), evaluated(false), result(0) {
-        evaluated = string_exp.back() != ')';
+    explicit ClojExp(string exp) : string_exp(exp), expression(false), result(0) {
+        expression = string_exp.back() == ')';
     };
 
     int get_result() const;
 
-    void eval();
+    virtual void eval();
 
     static void print_table();
 
     friend ostream &operator<<(ostream &o, const ClojExp &exp);
 
 };
+
+
 
 
 #endif //CPPCLO_CLOJEXP_H
